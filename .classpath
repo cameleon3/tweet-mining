@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="lib"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/jodaTime"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/mysqlconnector"/>
+	<classpathentry kind="lib" path="C:/Users/Jeremie/Desktop/Data_mining1/lib/stanford-postagger-3.5.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jeremie/Desktop/Data_mining1/lib/opencsv-2.3.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
