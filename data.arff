@@ -1,0 +1,6 @@
+@relation tweets
+
+@attribute outlook {sunny, overcast, rainy}
+@attribute windy {TRUE, FALSE}
+
+@data

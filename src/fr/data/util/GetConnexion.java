@@ -22,9 +22,9 @@ public static Connection getconnexion(){
       
     }
 
-	String url = "jdbc:mysql://localhost:3307/tw";
+	String url = "jdbc:mysql://localhost:3306/data_mining";
 	String utilisateur = "root";
-	String motDePasse = "root";
+	String motDePasse = "mohammad";
 
 	try {
 	    connexion = (Connection) DriverManager.getConnection( url, utilisateur, motDePasse );

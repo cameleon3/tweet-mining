@@ -26,7 +26,9 @@ import edu.stanford.nlp.process.DocumentPreprocessor;
 import edu.stanford.nlp.process.PTBTokenizer;
 import edu.stanford.nlp.process.TokenizerFactory;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
+import fr.data.util.DataManager;
 import fr.data.util.GetConnexion;
+import fr.uvsq.Lemmatizer;
 
 
 /** This demo shows user-provided sentences (i.e., {@code List<HasWord>})
@@ -46,8 +48,12 @@ class Tagger {
 	  retenu.add("NPP");
 	  retenu.add("NC");
 	  retenu.add("ADJ");
+	  retenu.add("ADJWH");
+	  retenu.add("ET");//foreign language
 	  retenu.add("N");
 	  retenu.add("V");
+	  retenu.add("VS");
+	  retenu.add("VPR");
 	  retenu.add("VPP");
 	  retenu.add("VINF");
 	  retenu.add("VIMP");
@@ -83,58 +89,88 @@ class Tagger {
 	 String text = "";
 	
 	try {
-		statmentListe =(PreparedStatement) GetConnexion.getconnexion().prepareStatement("select tweet_text,tweet_id from tweets limit 100");
+		statmentListe =(PreparedStatement) GetConnexion.getconnexion().prepareStatement("select tweet_text,tweet_id,created_at from tweets");
 		
 		resultat =  statmentListe.executeQuery();
 		Tweet tweet=new Tweet();
 		while(resultat.next()){
 			text=resultat.getString("tweet_text");
+			
+			/**
+			 * effacer les guillemé et quote pour eviter les incompatibilités en csv
+			 */
+			text=text.replaceAll("\"", " ");
+			text=text.replaceAll("'", " ");
+			text=text.replaceAll("’", " ");///eviter d’information
+			text=text.replaceAll("%", " ");
+			text=text.replaceAll(",", " ");
+			
+			
+			
+			
 			String result="";
 			
 			   DocumentPreprocessor tokenizer = new DocumentPreprocessor(new StringReader(text));
 			    for (List<HasWord> sentence : tokenizer) {
-			    	  
+			  
 
-			     
+			    
 			      List<TaggedWord> tagged = tagger.tagSentence(sentence);
 			      for (TaggedWord tw : tagged) {
 			    
-			    	  //pw.print(" "+tw.word()+" => "+tw.tag()+" ");
-			    	  //pw.println();
 			    	  
-			    	  if(!exist(tw.tag()))
+			    	  
+			    	
 			    		 
 						  if(existTag(tw.tag()))
 						      {
-						    	 // pw.print(" "+tw.word()+" => "+tw.tag()+" ");
+
+					    	  if(tw.word().toLowerCase().startsWith("http")||
+(tw.word().length()<3 && (!tw.word().toLowerCase().equals("fn")&&!tw.word().toLowerCase().equals("ps")&&!tw.word().toLowerCase().equals("an"))))
+								  continue;
+							  
+							
+//						    	 System.out.println(" "+tw.word()+" => "+tw.tag()+" ");
+						    	result+=" "+Lemmatizer.getRacine(tw.word(), tw.tag());
+						    			
 						    	
-						    	  //placer les traitements ici
-						    	 // result=result+tw.word()+" ";
 						      }
 						      else if(tw.tag().equals("DET") && isFalsePositive_det(tw.word()))
 						      {
 						    	  
-						    	  pw.print(" "+ tw.word().toLowerCase()+" => "+tw.tag()+" **faux** \n");
+						    	 result+=" "+tw.word();
 						      }
-						        
+						      else if(tw.tag().equals("ADV") && tw.word().toLowerCase().endsWith("ment")&&!tw.word().toLowerCase().startsWith("http"))
+						      {
+						    	  result+=" "+tw.word();  
+						    	  
+						      }
+						        result=result.toLowerCase();
 			        
 			      }
-			     // pw.println(result);
-			     
+			
+			   
 			    }
-			   /* tweet.setId(resultat.getString("tweet_id"));
+			// System.out.println(resultat.getString("created_at"));
+			 
+			 DateTime dt = new DateTime(); 
+				dt= new DateTime(resultat.getString("created_at").replace(' ', 'T'));
+				
+			    tweet.setId(resultat.getString("tweet_id"));
+			    
+			    
+			    DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss" );
+				
+			    tweet.setCreate_at(dt.toString( formatter ));
 			    tweet.setText(result);
 			    if(!result.equals(""))
-			    DataManager.insertCleanTweet(tweet);*/
-			    
+			    DataManager.insertCleanTweet(tweet);
+		    
 			  
 			
 		}
 		
-		  for(String t:listTag){
-		    	System.out.println(" "+t+" ");
-		    }
-
+		
 		
 	} 
 	catch (SQLException e) {
@@ -164,25 +200,15 @@ class Tagger {
   {
 	  if((text.startsWith("#")||text.startsWith("@")) && text.length()>=3)
 		  return true;
-	  else if(text.startsWith("http") && text.length()>=5)
-		  return true;
+	  else if(text.startsWith("http"))
+		  return false;
 	  else if(text.equals("Assemblee")||text.equals("Snowden")||text.equals("Barbusse"))
 		  return true;
 	  
 	  return false;
   }
   
-  public static boolean exist(String tag)
-  {
-	  for(String t:listTag){
-		  if(t.equals(tag))
-			  return true;
-		  
-	  }
-	  
-	  return false;
-  }
-  
+ 
   
   public static String getDate(Date date){
 	  
